@@ -5,24 +5,25 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Controller : MonoBehaviour
 {
-    bool facingRight = true;
-    bool jump = false;
+    public float speed = 5f;
+    public float jumpSpeed = 0.25f;
+    public float gravity = 2.5f;
+    public float terminalVelocity = 0.1f;
 
-
-    public float speed = 2f;
-    public float jumpSpeed = 0.2f;
-    public float gravity = 9.806f;
-    public float terminalVelocity = 50f;
-
+    class InputPoll
+    {
+        public bool aboutToJump = false;
+        public float axisHorizontal = 0f;
+    }
+    InputPoll inputPoll = new InputPoll();
+    
 
     [Range(0, 1)]
     public float groundCheck = 0.1f;
-    bool grounded = false;
-    [HideInInspector]
-    public Vector2 groundRay;
-    float timeSinceFall = 0;
     [HideInInspector]
     public float raycastPrecision = 5;
+    [HideInInspector]
+    public float raycastMargin = 0.1f;
 
     [HideInInspector]
     public Rigidbody2D rigidbody2D;
@@ -33,9 +34,11 @@ public class Controller : MonoBehaviour
     float lastH;
     float verticalSpeed;
 
+    State state = State.grounded;
+    Facing facing = Facing.right;
+
     void Awake()
     {
-        groundRay = new Vector2(0, -groundCheck);
     }
 
     void Start()
@@ -47,20 +50,55 @@ public class Controller : MonoBehaviour
 
     void Update()
     {
-        //grounded = Physics2D.Linecast(transform.position, groundCheck.position, 1 << LayerMask.NameToLayer("Environment"));
+        if (Input.GetButtonDown("Jump") && state == State.grounded)
+            inputPoll.aboutToJump = true;
+        inputPoll.axisHorizontal = Input.GetAxis("Horizontal");
+    }
 
-        //grounded = Physics2D.Linecast(transform.position, (Vector2)transform.position + groundRay, 1 << LayerMask.NameToLayer("Environment"));
-
-        grounded = false;
-
+    void FixedUpdate()
+    {
+        float horizontal = rigidbody2D.position.x;
+        float vertical = rigidbody2D.position.y;
         var bounds = collider2D.bounds;
+
+        if (inputPoll.axisHorizontal > 0 && facing == Facing.left || inputPoll.axisHorizontal < 0 && facing == Facing.right)
+            Flip();
+
+        bool inwall = false;
         for (float i = 0; i <= raycastPrecision; i++)
         {
             Vector2 from = new Vector2(
-                from.x = bounds.center.x - bounds.extents.x + i / raycastPrecision * 2 * bounds.extents.x,
-                bounds.center.y - bounds.extents.y
+                facing == Facing.right ? bounds.max.x + raycastMargin : bounds.min.x - raycastMargin,
+                bounds.min.y + i / raycastPrecision * 2 * bounds.extents.y
             );
-            Vector2 to = from + groundRay;
+            Vector2 to = from;
+            to.x += groundCheck;
+
+            if (Physics2D.Linecast(from, to, 1 << LayerMask.NameToLayer("Environment")))
+            {
+                inwall = true;
+                break;
+            }
+        }
+
+        if (Mathf.Abs(inputPoll.axisHorizontal) > 0 && Mathf.Abs(inputPoll.axisHorizontal) >= lastH && !inwall)
+        {
+            var delta = Time.fixedDeltaTime * speed * (inputPoll.axisHorizontal / Mathf.Abs(inputPoll.axisHorizontal));
+            horizontal = rigidbody2D.position.x + delta;
+        }
+
+
+        bool grounded = false;
+
+        for (float i = 0; i <= raycastPrecision; i++)
+        {
+            Vector2 from = new Vector2(
+                bounds.min.x + i / raycastPrecision * 2 * bounds.extents.x,
+                bounds.min.y
+            );
+            Vector2 to = from;
+            to.y -= groundCheck;
+
             if (Physics2D.Linecast(from, to, 1 << LayerMask.NameToLayer("Environment")))
             {
                 grounded = true;
@@ -68,58 +106,53 @@ public class Controller : MonoBehaviour
             }
         }
 
-
-        if (!grounded)
-            timeSinceFall += Time.deltaTime;
-
-        if (Input.GetButtonDown("Jump") && grounded)
-            jump = true;
-    }
-
-
-    void FixedUpdate()
-    {
-        float h = Input.GetAxis("Horizontal");
-        float horizontal = rigidbody2D.position.x;
-        float vertical = rigidbody2D.position.y;
-
-        if (Mathf.Abs(h) > 0 && Mathf.Abs(h) >= lastH)
-            horizontal = rigidbody2D.position.x + Time.fixedDeltaTime * speed * (h / Mathf.Abs(h));
-
-        if (h > 0 && !facingRight || h < 0 && facingRight)
-            Flip();
-
+        if (grounded)
+            state = State.grounded;
         if (!grounded)
         {
             verticalSpeed -= gravity * Time.fixedDeltaTime;
             if (verticalSpeed < -terminalVelocity)
                 verticalSpeed = -terminalVelocity;
             vertical = rigidbody2D.position.y + verticalSpeed;
+
+            state = verticalSpeed > 0 ? State.jumping : State.falling;
         }
-        else if (jump)
+        
+        if (inputPoll.aboutToJump)
         {
             verticalSpeed = jumpSpeed;
             vertical = rigidbody2D.position.y + verticalSpeed;
-            jump = false;
-            timeSinceFall = 0;
+            inputPoll.aboutToJump = false;
         }
 
         animator.SetBool("Run", horizontal != rigidbody2D.position.x);
 
 
         rigidbody2D.MovePosition(new Vector2(horizontal, vertical));
-        lastH = Mathf.Abs(h);
+        lastH = Mathf.Abs(inputPoll.axisHorizontal);
     }
 
 
     void Flip()
     {
-        // Switch the way the player is labelled as facing.
-        facingRight = !facingRight;
+        facing = facing == Facing.right ? Facing.left : Facing.right;
 
-        // Multiply the player's x local scale by -1.
         Vector3 theScale = transform.localScale;
         theScale.x *= -1;
         transform.localScale = theScale;
+    }
+
+    public enum State
+    {
+        grounded,
+        jumping,
+        falling,
+        wallsliding
+    }
+
+    public enum Facing
+    {
+        right = 1,
+        left = -1
     }
 }
