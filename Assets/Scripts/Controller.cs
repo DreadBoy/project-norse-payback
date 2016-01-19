@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Rigidbody2D))]
 public class Controller : MonoBehaviour
 {
@@ -27,6 +28,7 @@ public class Controller : MonoBehaviour
     public Rigidbody2D rigidbody2D;
     [HideInInspector]
     public Collider2D collider2D;
+    Animator animator;
 
     float lastH;
     float verticalSpeed;
@@ -40,6 +42,7 @@ public class Controller : MonoBehaviour
     {
         rigidbody2D = GetComponent<Rigidbody2D>();
         collider2D = GetComponent<Collider2D>();
+        animator = GetComponent<Animator>();
     }
 
     void Update()
@@ -100,6 +103,9 @@ public class Controller : MonoBehaviour
             jump = false;
             timeSinceFall = 0;
         }
+
+        animator.SetBool("Run", horizontal != rigidbody2D.position.x);
+
 
         rigidbody2D.MovePosition(new Vector2(horizontal, vertical));
         lastH = Mathf.Abs(h);
