@@ -6,8 +6,8 @@ using System.Collections;
 public class Controller : MonoBehaviour
 {
     public float speed = 5f;
-    public float jumpSpeed = 0.25f;
-    public float gravity = 2.5f;
+    public float jumpSpeed = 0.5f;
+    public float gravity = 0.0f;
     public float wallGravity = 1.5f;
     public float terminalVelocity = 0.1f;
     public float wallTerminalVelocity = 0.08f;

@@ -158,12 +158,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 42530a87f1253a4429cd279014f0d075, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 5
-  jumpSpeed: 0.25
-  gravity: 2.5
-  wallGravity: 1.5
-  terminalVelocity: 0.1
-  wallTerminalVelocity: 0.08
+  speed: 6
+  jumpSpeed: 0.21
+  gravity: 0.9
+  wallGravity: 1
+  terminalVelocity: 0.15
+  wallTerminalVelocity: 0.01
   groundCheck: 0.1
   raycastPrecision: 5
   raycastMargin: 0.1
