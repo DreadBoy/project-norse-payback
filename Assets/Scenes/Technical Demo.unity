@@ -142,7 +142,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 421527757}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.88, y: -1.47728, z: 0}
+  m_LocalPosition: {x: -1.7, y: -1.48, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -161,12 +161,15 @@ MonoBehaviour:
   speed: 5
   jumpSpeed: 0.25
   gravity: 2.5
+  wallGravity: 1.5
   terminalVelocity: 0.1
+  wallTerminalVelocity: 0.08
   groundCheck: 0.1
   raycastPrecision: 5
   raycastMargin: 0.1
   rigidbody2D: {fileID: 421527761}
   collider2D: {fileID: 421527762}
+  state: 0
 --- !u!50 &421527761
 Rigidbody2D:
   serializedVersion: 2
@@ -348,9 +351,9 @@ BoxCollider2D:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_UsedByEffector: 0
-  m_Offset: {x: -6.7598696, y: 0}
+  m_Offset: {x: -6.7598696, y: 1.8710251}
   serializedVersion: 2
-  m_Size: {x: 5.624335, y: 4.68}
+  m_Size: {x: 5.6243343, y: 8.42205}
 --- !u!61 &804009389
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -362,9 +365,9 @@ BoxCollider2D:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_UsedByEffector: 0
-  m_Offset: {x: 0.31135368, y: -1.8088331}
+  m_Offset: {x: -1.9128547, y: 1.0209751}
   serializedVersion: 2
-  m_Size: {x: 0.8964052, y: 1.0623336}
+  m_Size: {x: 1.1967802, y: 0.4408679}
 --- !u!1 &932952361
 GameObject:
   m_ObjectHideFlags: 0
