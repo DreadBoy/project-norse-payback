@@ -1,0 +1,5 @@
+jump while wall sliding should move you in opposite direction of a wall, at least for some short time
+
+raycast above head to check for ceiling
+
+walk up and down slopes, determine maximum slope degree
