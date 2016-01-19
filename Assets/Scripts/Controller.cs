@@ -4,44 +4,68 @@ using System.Collections;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Controller : MonoBehaviour
 {
-    public bool facingRight = true;         // For determining which way the player is currently facing.
-    public bool jump = false;               // Condition for whether the player should jump.
+    bool facingRight = true;
+    bool jump = false;
 
 
-    public float speed = 2f;             // The fastest the player can travel in the x axis.
-    public float jumpSpeed = 0.2f;         // Amount of force added when the player jumps.
+    public float speed = 2f;
+    public float jumpSpeed = 0.2f;
     public float gravity = 9.806f;
     public float terminalVelocity = 50f;
 
 
-    public Transform groundCheck;          // A position marking where to check if the player is grounded.
-    public bool grounded = false;          // Whether or not the player is grounded.
-    Vector3 groundRay;
+    [Range(0, 1)]
+    public float groundCheck = 0.1f;
+    bool grounded = false;
+    [HideInInspector]
+    public Vector2 groundRay;
     float timeSinceFall = 0;
+    [HideInInspector]
+    public float raycastPrecision = 5;
 
-    Rigidbody2D rigidbody2D;
+    [HideInInspector]
+    public Rigidbody2D rigidbody2D;
+    [HideInInspector]
+    public Collider2D collider2D;
 
     float lastH;
     float verticalSpeed;
 
     void Awake()
     {
-        // Setting up references.
-        if (groundCheck == null)
-            groundCheck = transform.Find("groundCheck");
-        groundRay = new Vector3(0, (groundCheck.position - transform.position).y);
+        groundRay = new Vector2(0, -groundCheck);
     }
 
     void Start()
     {
         rigidbody2D = GetComponent<Rigidbody2D>();
+        collider2D = GetComponent<Collider2D>();
     }
 
     void Update()
     {
         //grounded = Physics2D.Linecast(transform.position, groundCheck.position, 1 << LayerMask.NameToLayer("Environment"));
 
-        grounded = Physics2D.Linecast(transform.position, transform.position + groundRay, 1 << LayerMask.NameToLayer("Environment"));
+        //grounded = Physics2D.Linecast(transform.position, (Vector2)transform.position + groundRay, 1 << LayerMask.NameToLayer("Environment"));
+
+        grounded = false;
+
+        var bounds = collider2D.bounds;
+        for (float i = 0; i <= raycastPrecision; i++)
+        {
+            Vector2 from = new Vector2(
+                from.x = bounds.center.x - bounds.extents.x + i / raycastPrecision * 2 * bounds.extents.x,
+                bounds.center.y - bounds.extents.y
+            );
+            Vector2 to = from + groundRay;
+            if (Physics2D.Linecast(from, to, 1 << LayerMask.NameToLayer("Environment")))
+            {
+                grounded = true;
+                break;
+            }
+        }
+
+
         if (!grounded)
             timeSinceFall += Time.deltaTime;
 
