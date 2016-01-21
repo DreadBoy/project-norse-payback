@@ -3,5 +3,3 @@ jump while wall sliding should move you in opposite direction of a wall, at leas
 raycast above head to check for ceiling
 
 walk up and down slopes, determine maximum slope degree
-
-raycasting for ground works in discrete intervals, by the look of things (check chests above main room)

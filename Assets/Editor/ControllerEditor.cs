@@ -16,5 +16,10 @@ public class ControllerEditor : Editor
         if (controller.collider2D == null)
             return;
         var bounds = controller.collider2D.bounds;
+
+        foreach (var ray in controller.RaycastHits)
+        {
+            Handles.DrawLine(ray.from, ray.to);
+        }
     }
 }

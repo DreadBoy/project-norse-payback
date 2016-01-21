@@ -164,7 +164,7 @@ MonoBehaviour:
   wallGravity: 1
   terminalVelocity: 0.15
   wallTerminalVelocity: 0.01
-  groundCheck: 0.1
+  groundMargin: 0.01
   raycastPrecision: 5
   raycastMargin: 0.1
   rigidbody2D: {fileID: 421527761}

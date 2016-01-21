@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Rigidbody2D))]
@@ -19,9 +20,8 @@ public class Controller : MonoBehaviour
     }
     InputPoll inputPoll = new InputPoll();
 
-
-    [Range(0, 1)]
-    public float groundCheck = 0.1f;
+    [Range(0, 0.1f)]
+    public float groundMargin = 0.01f;
     [HideInInspector]
     public float raycastPrecision = 5;
     [HideInInspector]
@@ -35,9 +35,20 @@ public class Controller : MonoBehaviour
 
     float lastH;
     float verticalSpeed;
+    float horizontalSpeed;
 
     public State state = State.idle;
     Facing facing = Facing.right;
+
+    //Scene Editor info
+    public struct Raycast
+    {
+        public Vector2 from;
+        public Vector2 to;
+    };
+    [HideInInspector]
+    public List<Raycast> RaycastHits = new List<Raycast>();
+
 
     void Awake()
     {
@@ -65,26 +76,39 @@ public class Controller : MonoBehaviour
         //flip sprite if needed
         if (inputPoll.axisHorizontal > 0 && facing == Facing.left || inputPoll.axisHorizontal < 0 && facing == Facing.right)
             Flip();
-        
+
+        RaycastHits.Clear();
+        List<Raycast> rays;
         //raycast
-        var grounded = raycastGround();
-        var inwall = raycastForward();
+        var grounded = raycastGround(verticalSpeed < 0 ? Mathf.Abs(verticalSpeed) : groundMargin, out rays);
+        RaycastHits.AddRange(rays);
+        var inwall = raycastForward(horizontalSpeed, out rays);
+        RaycastHits.AddRange(rays);
 
         //horizontal movement
-        float delta = 0;
+        horizontalSpeed = 0;
         if (Mathf.Abs(inputPoll.axisHorizontal) > 0 && Mathf.Abs(inputPoll.axisHorizontal) >= lastH && !inwall)
-            delta = Time.fixedDeltaTime * speed * (inputPoll.axisHorizontal / Mathf.Abs(inputPoll.axisHorizontal));
-        horizontal = rigidbody2D.position.x + delta;
+            horizontalSpeed = Time.fixedDeltaTime * speed * (inputPoll.axisHorizontal / Mathf.Abs(inputPoll.axisHorizontal));
+        horizontal = rigidbody2D.position.x + horizontalSpeed;
         lastH = Mathf.Abs(inputPoll.axisHorizontal);
 
 
         //vertical movement
+        //falling down and hit a floor in this frame
+        if(grounded && verticalSpeed < 0)
+        {
+            //stop falling and move to floor level
+            verticalSpeed = 0;
+            vertical -= grounded.distance - groundMargin / 2;
+        }
+        //is about to jump
         if (inputPoll.aboutToJump)
         {
             verticalSpeed = jumpSpeed;
             vertical = rigidbody2D.position.y + verticalSpeed;
             inputPoll.aboutToJump = false;
         }
+        //is still jumping or falling
         else if (!grounded)
         {
             var grav = inwall ? wallGravity : gravity;
@@ -97,9 +121,9 @@ public class Controller : MonoBehaviour
         }
 
         //animate correct sprite
-        if (grounded && delta == 0)
+        if (grounded && horizontalSpeed == 0)
             state = State.idle;
-        else if (grounded && delta != 0)
+        else if (grounded && horizontalSpeed != 0)
             state = State.running;
         else if (!grounded && inwall)
             state = State.wallsliding;
@@ -128,10 +152,18 @@ public class Controller : MonoBehaviour
         return state == State.idle || state == State.running || state == State.wallsliding;
     }
 
-    bool raycastGround()
+    bool raycastGround(float margin)
+    {
+        List<Raycast> rays = new List<Raycast>();
+        return raycastGround(margin, out rays);
+    }
+    RaycastHit2D raycastGround(float margin, out List<Raycast> rays)
     {
         var bounds = collider2D.bounds;
         bool grounded = false;
+
+        rays = new List<Raycast>();
+        RaycastHit2D rayHit = new RaycastHit2D();
 
         for (float i = 0; i <= raycastPrecision; i++)
         {
@@ -140,22 +172,33 @@ public class Controller : MonoBehaviour
                 bounds.min.y
             );
             Vector2 to = from;
-            to.y -= groundCheck;
-
-            if (Physics2D.Linecast(from, to, 1 << LayerMask.NameToLayer("Environment")))
+            to.y -= margin;
+            
+            rays.Add(new Raycast() { from = from, to = to });
+            rayHit = Physics2D.Raycast(from, to - from, (to - from).magnitude, 1 << LayerMask.NameToLayer("Environment"));
+            if (rayHit)
             {
                 grounded = true;
                 break;
             }
         }
 
-        return grounded;
+        return grounded ? rayHit : new RaycastHit2D();
     }
 
-    bool raycastForward()
+
+    bool raycastForward(float margin)
+    {
+        List<Raycast> rays = new List<Raycast>();
+        return raycastForward(margin, out rays);
+    }
+    RaycastHit2D raycastForward(float margin, out List<Raycast> rays)
     {
         var bounds = collider2D.bounds;
         bool inwall = false;
+
+        rays = new List<Raycast>();
+        RaycastHit2D rayHit = new RaycastHit2D();
 
         for (float i = 0; i <= raycastPrecision; i++)
         {
@@ -164,15 +207,17 @@ public class Controller : MonoBehaviour
                 bounds.min.y + i / raycastPrecision * 2 * bounds.extents.y
             );
             Vector2 to = from;
-            to.x += groundCheck;
+            to.x += margin;
 
-            if (Physics2D.Linecast(from, to, 1 << LayerMask.NameToLayer("Environment")))
+            rays.Add(new Raycast() { from = from, to = to });
+            rayHit = Physics2D.Raycast(from, to - from, (to -from).magnitude, 1 << LayerMask.NameToLayer("Environment"));
+            if (rayHit)
             {
                 inwall = true;
                 break;
             }
         }
-        return inwall;
+        return inwall ? rayHit : new RaycastHit2D();
     }
 
     public enum State
