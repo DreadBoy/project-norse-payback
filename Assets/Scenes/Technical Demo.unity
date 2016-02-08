@@ -95,6 +95,7 @@ GameObject:
   - 4: {fileID: 421527759}
   - 212: {fileID: 421527758}
   - 114: {fileID: 421527760}
+  - 114: {fileID: 421527764}
   - 50: {fileID: 421527761}
   - 61: {fileID: 421527762}
   - 95: {fileID: 421527763}
@@ -142,7 +143,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 421527757}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.7, y: -1.48, z: 0}
+  m_LocalPosition: {x: -1.61, y: -0.657, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -164,11 +165,9 @@ MonoBehaviour:
   wallGravity: 1
   terminalVelocity: 0.15
   wallTerminalVelocity: 0.01
-  groundMargin: 0.01
-  raycastPrecision: 5
-  raycastMargin: 0.1
   rigidbody2D: {fileID: 421527761}
   collider2D: {fileID: 421527762}
+  raycasting: {fileID: 0}
   state: 0
 --- !u!50 &421527761
 Rigidbody2D:
@@ -218,6 +217,20 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
+--- !u!114 &421527764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 421527757}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e78d288f3e16a8043a8dea59ce4b1cc0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  groundMargin: 0.01
+  raycastPrecision: 5
+  wallMargin: 0.01
 --- !u!1 &804009382
 GameObject:
   m_ObjectHideFlags: 0
@@ -320,8 +333,8 @@ PolygonCollider2D:
     m_Paths:
     - - {x: -0.4374289, y: -1.8302594}
       - {x: -3.8862197, y: -1.8415071}
-      - {x: -3.8933654, y: -0.25098395}
-      - {x: -4.1498766, y: -0.25604996}
+      - {x: -3.9030824, y: 1.2260185}
+      - {x: -4.1304426, y: 1.2112354}
       - {x: -4.141738, y: -2.3453536}
       - {x: 4.148787, y: -2.3461266}
       - {x: 4.138732, y: 0.09603989}
@@ -351,9 +364,9 @@ BoxCollider2D:
   m_Material: {fileID: 0}
   m_IsTrigger: 1
   m_UsedByEffector: 0
-  m_Offset: {x: -6.7598696, y: 1.8710251}
+  m_Offset: {x: 4.752352, y: 1.8710251}
   serializedVersion: 2
-  m_Size: {x: 5.6243343, y: 8.42205}
+  m_Size: {x: 5.0975523, y: 8.42205}
 --- !u!61 &804009389
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -363,11 +376,11 @@ BoxCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
-  m_Offset: {x: -1.9128547, y: 1.0209751}
+  m_Offset: {x: -3.3758626, y: 0.73102593}
   serializedVersion: 2
-  m_Size: {x: 1.1967802, y: 0.4408679}
+  m_Size: {x: 2.1853743, y: 5.550661}
 --- !u!1 &932952361
 GameObject:
   m_ObjectHideFlags: 0
