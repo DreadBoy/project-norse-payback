@@ -56,6 +56,16 @@ public class Controller : MonoBehaviour
         if (Input.GetButtonDown("Jump") && isOnGround())
             inputPoll.aboutToJump = true;
         inputPoll.axisHorizontal = Input.GetAxis("Horizontal");
+        if (inputPoll.axisHorizontal == 0)
+        {
+            lastH = inputPoll.axisHorizontal;
+        }
+        else if (Mathf.Abs(inputPoll.axisHorizontal) < lastH)
+        {
+            inputPoll.axisHorizontal = 0;
+        }
+        else
+            lastH = Mathf.Abs(inputPoll.axisHorizontal);
     }
 
     void FixedUpdate()
@@ -85,17 +95,16 @@ public class Controller : MonoBehaviour
 
         //horizontal movement
         //if we are in air or on horizontal surface, just move
-        if (!envInfo.inwall)
+        if (Mathf.Abs(horizontalSpeed) > 0 && !envInfo.inwall)
         {
             horizontal = rigidbody2D.position.x + horizontalSpeed;
         }
         //otherwise reset speed and move to wall
-        if (envInfo.inwall)
+        if (Mathf.Abs(horizontalSpeed) > 0 && envInfo.inwall)
         {
             horizontalSpeed = 0;
-            horizontal = horizontal + (int)facing * envInfo.wallDistance;
+            horizontal = horizontal + (int)facing * (envInfo.wallDistance + raycasting.wallMargin / 2);
         }
-        lastH = Mathf.Abs(inputPoll.axisHorizontal);
 
 
         //vertical movement

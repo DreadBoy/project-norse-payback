@@ -114,7 +114,7 @@ public class Raycasting : MonoBehaviour
             if (rayHit)
             {
                 envInfo.inwall = true;
-                var distance = Mathf.Abs(rayHit.distance - bounds.extents.x * 2);
+                var distance = Mathf.Abs(rayHit.distance - (bounds.extents.x * 2 + wallMargin));
                 if (distance > wallMargin)
                     envInfo.wallDistance = distance;
                 break;
